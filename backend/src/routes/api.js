@@ -1,5 +1,5 @@
 import express from 'express';
-import { supabase, isSupabaseConfigured } from '../config/supabase.js';
+import { isSupabaseConfigured, supabaseUrl, supabaseAnonKey } from '../config/supabase.js';
 
 const router = express.Router();
 
@@ -37,21 +37,27 @@ router.get('/supabase-test', async (req, res, next) => {
       });
     }
 
-    // Try a simple ping query (e.g. check connection or auth settings)
-    const { data, error } = await supabase.auth.getSession();
+    // Hit Supabase's own health-check endpoint to confirm the project is actually
+    // reachable over the network (independent of whether any tables exist yet).
+    const response = await fetch(`${supabaseUrl}/auth/v1/health`, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`
+      }
+    });
 
-    if (error) {
-      return res.status(400).json({
+    if (!response.ok) {
+      return res.status(502).json({
         success: false,
-        message: error.message,
-        error
+        message: `Supabase project responded with HTTP ${response.status}`,
+        configured: true
       });
     }
 
     res.json({
       success: true,
-      message: 'Supabase client initialized and reachable',
-      sessionData: data
+      message: 'Supabase project is configured and reachable',
+      configured: true
     });
   } catch (err) {
     next(err);

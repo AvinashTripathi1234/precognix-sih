@@ -330,6 +330,20 @@
   border-color: var(--accent-primary);
 }
 
+/* Loading spinner */
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Footer */
 .footer {
   border-top: 1px solid var(--border-color);

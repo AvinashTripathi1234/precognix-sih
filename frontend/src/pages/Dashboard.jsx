@@ -75,7 +75,7 @@ export default function Dashboard() {
       if (type === 'health') res = await fetchHealth();
       else if (type === 'status') res = await fetchStatus();
       else if (type === 'supabase') res = await testSupabase();
-      setApiResponse({ type, data: res, success: true });
+      setApiResponse({ type, data: res, success: res.success !== false });
     } catch (err) {
       setApiResponse({ type, data: { error: err.message }, success: false });
     } finally {
