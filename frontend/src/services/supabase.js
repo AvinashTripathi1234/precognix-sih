@@ -24,4 +24,6 @@ export const getSupabaseConfigInfo = () => {
   };
 };
 
+export * from './supabaseService';
+
 export default supabase;

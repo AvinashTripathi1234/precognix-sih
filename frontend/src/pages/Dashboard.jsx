@@ -1,26 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from '../services/socket';
-import { fetchHealth, fetchStatus, testSupabase } from '../services/api';
+import { fetchHealth, fetchStatus, testSupabase, analyzeTriage } from '../services/api';
 import { isSupabaseConfigured } from '../services/supabase';
-import { Activity, Send, RefreshCw, Radio, CheckCircle, XCircle, Code, ShieldCheck } from 'lucide-react';
 
 export default function Dashboard() {
   // Socket State
   const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState('');
-  const [socketId, setSocketId] = useState(socket.id || 'Connecting...');
+  const [socketId, setSocketId] = useState(socket.id || 'CONNECTING...');
   const [latency, setLatency] = useState(null);
 
   // API State
   const [apiResponse, setApiResponse] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
 
+  // Triage State
+  const [triageSymptoms, setTriageSymptoms] = useState('');
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageResult, setTriageResult] = useState(null);
+  const [triageError, setTriageError] = useState(null);
+
   useEffect(() => {
     function onWelcome(data) {
       setSocketId(data.socketId);
       setMessages((prev) => [
         ...prev,
-        `[Server]: ${data.message} (${new Date(data.timestamp).toLocaleTimeString()})`
+        `[SERVER]: ${data.message} (${new Date(data.timestamp).toLocaleTimeString()})`
       ]);
     }
 
@@ -31,14 +36,14 @@ export default function Dashboard() {
       }
       setMessages((prev) => [
         ...prev,
-        `[Server Pong]: Latency ${Date.now() - pingTime}ms`
+        `[SERVER PONG]: LATENCY ${Date.now() - pingTime}MS`
       ]);
     }
 
     function onBroadcast(data) {
       setMessages((prev) => [
         ...prev,
-        `[${data.senderId === socket.id ? 'You' : data.senderId.substring(0, 6)}]: ${data.message}`
+        `[${data.senderId === socket.id ? 'LOCAL' : data.senderId.substring(0, 6)}]: ${data.message}`
       ]);
     }
 
@@ -56,7 +61,7 @@ export default function Dashboard() {
   const handleSendPing = () => {
     const sentAt = Date.now();
     socket.emit('client:ping', { sentAt });
-    setMessages((prev) => [...prev, `[Client]: Ping sent at ${new Date().toLocaleTimeString()}...`]);
+    setMessages((prev) => [...prev, `[CLIENT]: PING TRANSMITTED AT ${new Date().toLocaleTimeString()}...`]);
   };
 
   const handleSendMessage = (e) => {
@@ -83,170 +88,155 @@ export default function Dashboard() {
     }
   };
 
+  const handleRunTriage = async (e) => {
+    e?.preventDefault();
+    if (!triageSymptoms.trim()) return;
+
+    setTriageLoading(true);
+    setTriageError(null);
+    setTriageResult(null);
+
+    try {
+      const data = await analyzeTriage(triageSymptoms);
+      setTriageResult(data);
+    } catch (err) {
+      setTriageError(err.message);
+    } finally {
+      setTriageLoading(false);
+    }
+  };
+
   return (
-    <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-          Interactive Diagnostics & Live Test
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 font-serif text-[#111111]">
+      <div className="border-b-4 border-[#111111] pb-3 mb-6">
+        <div className="font-mono text-[11px] font-bold uppercase text-[#777777] mb-1">
+          DIAGNOSTIC TELEMETRY • SECTION V
+        </div>
+        <h2 className="text-3xl md:text-4xl font-serif font-black text-[#111111]">
+          System Communication, WebSocket Bus & Endpoint Diagnostics
         </h2>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          Test real-time WebSocket communication, backend Express REST API routes, and Supabase client integration live.
+        <p className="font-serif italic text-sm text-[#555555] mt-1">
+          Real-time verification of Express routes, Socket.io bi-directional messaging, and Supabase data connectivity.
         </p>
       </div>
 
-      <div className="card-grid">
-        {/* Socket.io Live Console Card */}
-        <div className="card" style={{ gridColumn: 'span 2' }}>
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon cyan">
-                <Radio size={20} />
-              </div>
-              <h3 className="card-title">Live Socket.io Real-Time Stream</h3>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button onClick={handleSendPing} className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
-                <Activity size={14} /> Send Ping {latency !== null && `(${latency}ms)`}
+      {/* Collapsed Grid Telemetry Containers */}
+      <div className="grid grid-cols-1 md:grid-cols-2 border-2 border-[#111111] bg-[#F9F9F7] divide-y md:divide-y-0 md:divide-x divide-[#111111]">
+        
+        {/* Left Column: WebSocket Stream */}
+        <div className="p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[#111111] pb-2 font-mono text-xs">
+              <span className="font-bold text-[#111111] uppercase">
+                WEBSOCKET DISPATCH BUS // ID: {socket.id || socketId}
+              </span>
+              <button
+                onClick={handleSendPing}
+                className="btn-secondary text-[10px] py-1 px-2.5"
+              >
+                TRANSMIT PING {latency !== null && `[${latency}MS]`}
               </button>
             </div>
-          </div>
 
-          <p className="card-desc">
-            Socket ID: <code style={{ color: 'var(--accent-cyan)' }}>{socket.id || socketId}</code> | Transport: <code style={{ color: 'var(--accent-emerald)' }}>WebSocket</code>
-          </p>
-
-          <div className="chat-box">
-            {messages.length === 0 ? (
-              <div style={{ color: 'var(--text-muted)', fontStyle: 'italic', margin: 'auto' }}>
-                No events yet. Start the backend server and emit a message or ping!
-              </div>
-            ) : (
-              messages.map((msg, idx) => (
-                <div key={idx} className="chat-msg">
-                  {msg}
+            <div className="h-48 bg-[#F9F9F7] border border-[#111111] p-3 overflow-y-auto space-y-1 font-mono text-xs">
+              {messages.length === 0 ? (
+                <div className="text-[#888888] italic">
+                  NO TELEMETRY EVENTS RECORDED YET. TRANSMIT PING OR BROADCAST MESSAGE.
                 </div>
-              ))
-            )}
-          </div>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div key={idx} className="border-b border-[#E5E5E5] pb-0.5 text-[#222222]">
+                    {msg}
+                  </div>
+                ))
+              )}
+            </div>
 
-          <form onSubmit={handleSendMessage} className="chat-input-row">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="Type a message to broadcast via Socket.io..."
-              value={inputMsg}
-              onChange={(e) => setInputMsg(e.target.value)}
-            />
-            <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
-              <Send size={16} /> Broadcast
-            </button>
-          </form>
+            <form onSubmit={handleSendMessage} className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 font-mono text-xs uppercase"
+                placeholder="ENTER BROADCAST PAYLOAD..."
+                value={inputMsg}
+                onChange={(e) => setInputMsg(e.target.value)}
+              />
+              <button type="submit" className="btn-primary py-2 px-4 text-xs">
+                BROADCAST
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* REST API Tester Card */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon">
-                <Code size={20} />
-              </div>
-              <h3 className="card-title">Backend API Routes</h3>
-            </div>
+        {/* Right Column: API & Triage Tester */}
+        <div className="p-5 space-y-4">
+          <div className="font-mono text-xs font-bold uppercase text-[#111111] border-b border-[#111111] pb-2">
+            REST API & INFERENCE SMOKE TEST
           </div>
-          <p className="card-desc">Trigger Express.js backend endpoints directly:</p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div className="space-y-2">
             <button
               onClick={() => handleCallApi('health')}
               disabled={apiLoading}
-              className="btn btn-secondary"
-              style={{ justifyContent: 'space-between' }}
+              className="w-full btn-secondary text-xs flex justify-between py-2 text-left"
             >
               <span>GET /api/health</span>
-              <RefreshCw size={14} className={apiLoading ? 'spin' : ''} />
+              <span>[EXECUTE]</span>
             </button>
 
             <button
               onClick={() => handleCallApi('status')}
               disabled={apiLoading}
-              className="btn btn-secondary"
-              style={{ justifyContent: 'space-between' }}
+              className="w-full btn-secondary text-xs flex justify-between py-2 text-left"
             >
               <span>GET /api/status</span>
-              <RefreshCw size={14} className={apiLoading ? 'spin' : ''} />
+              <span>[EXECUTE]</span>
             </button>
 
             <button
               onClick={() => handleCallApi('supabase')}
               disabled={apiLoading}
-              className="btn btn-secondary"
-              style={{ justifyContent: 'space-between' }}
+              className="w-full btn-secondary text-xs flex justify-between py-2 text-left"
             >
               <span>GET /api/supabase-test</span>
-              <RefreshCw size={14} className={apiLoading ? 'spin' : ''} />
+              <span>[EXECUTE]</span>
             </button>
           </div>
 
           {apiResponse && (
-            <div
-              style={{
-                backgroundColor: 'rgba(0,0,0,0.3)',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '0.8rem',
-                border: `1px solid ${apiResponse.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 600 }}>
-                {apiResponse.success ? (
-                  <CheckCircle size={16} color="#10b981" />
-                ) : (
-                  <XCircle size={16} color="#f43f5e" />
-                )}
-                Response ({apiResponse.type}):
+            <div className="p-3 border border-[#111111] bg-[#F9F9F7] font-mono text-xs">
+              <div className="font-bold uppercase text-[#111111] mb-1">
+                RESPONSE ({apiResponse.type}):
               </div>
-              <pre style={{ overflowX: 'auto', maxHeight: '140px' }}>
+              <pre className="max-h-24 overflow-x-auto text-[11px] text-[#444444]">
                 {JSON.stringify(apiResponse.data, null, 2)}
               </pre>
             </div>
           )}
-        </div>
 
-        {/* Environment Variable Check Card */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon emerald">
-                <ShieldCheck size={20} />
+          {/* Inference Test */}
+          <div className="pt-2 border-t border-[#111111]">
+            <form onSubmit={handleRunTriage} className="space-y-2">
+              <input
+                type="text"
+                placeholder="TYPE TEST SYMPTOMS TO RUN INFERENCE..."
+                value={triageSymptoms}
+                onChange={(e) => setTriageSymptoms(e.target.value)}
+                className="w-full font-mono text-xs"
+              />
+              <button
+                type="submit"
+                disabled={triageLoading || !triageSymptoms.trim()}
+                className="btn-primary w-full text-xs py-2"
+              >
+                {triageLoading ? 'COMPUTING...' : 'TEST GEMINI INFERENCE'}
+              </button>
+            </form>
+
+            {triageResult && (
+              <div className="mt-2 p-2 border border-[#111111] font-mono text-xs bg-[#EFEFEA]">
+                <strong>VERDICT:</strong> {triageResult.urgency_score} • {triageResult.suggested_specialist}
               </div>
-              <h3 className="card-title">Environment (.env)</h3>
-            </div>
-          </div>
-          <p className="card-desc">Current client-side configuration parameters:</p>
-
-          <div className="kv-list">
-            <div className="kv-item">
-              <span className="kv-key">VITE_API_URL</span>
-              <span className="kv-value">{import.meta.env.VITE_API_URL || 'http://localhost:5000'}</span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">VITE_SUPABASE_URL</span>
-              <span className="kv-value">
-                {import.meta.env.VITE_SUPABASE_URL ? 'Loaded in .env' : 'Missing'}
-              </span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">VITE_SUPABASE_ANON_KEY</span>
-              <span className="kv-value">
-                {import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Loaded (Protected)' : 'Missing'}
-              </span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Supabase Status</span>
-              <span className="kv-value" style={{ color: isSupabaseConfigured() ? '#10b981' : '#f59e0b' }}>
-                {isSupabaseConfigured() ? 'Ready' : 'Placeholder in .env'}
-              </span>
-            </div>
+            )}
           </div>
         </div>
       </div>

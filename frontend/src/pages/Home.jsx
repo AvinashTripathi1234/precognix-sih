@@ -1,150 +1,54 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { fetchStatus } from '../services/api';
-import { isSupabaseConfigured, getSupabaseConfigInfo } from '../services/supabase';
-import { Server, Zap, Database, Globe, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Home() {
-  const [backendStatus, setBackendStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const supabaseInfo = getSupabaseConfigInfo();
-
-  useEffect(() => {
-    fetchStatus()
-      .then((data) => {
-        setBackendStatus(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch backend status:', err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
   return (
-    <div className="hero-section">
-      <div className="hero">
-        <div className="hero-tag">
-          <Zap size={14} /> Full-Stack Architecture Ready
+    <div className="w-full min-h-[75vh] flex items-center justify-center px-4 py-12 font-serif text-[#111111]">
+      <div className="max-w-3xl w-full border-4 border-[#111111] bg-[#F9F9F7] p-8 md:p-14 text-center space-y-8 shadow-none">
+        
+        {/* Header Eyebrow */}
+        <div className="border-b border-[#111111] pb-3">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#555555]">
+            COMMUNITY HEALTHCARE TRIAGE SYSTEM
+          </span>
         </div>
-        <h1 className="hero-title">
-          Express + Socket.io + Supabase + React
-        </h1>
-        <p className="hero-subtitle">
-          A production-ready foundation with modular routing, WebSocket bi-directional communication, Supabase SDK integration, and modern React 19 + Vite.
-        </p>
-        <div className="hero-actions">
-          <Link to="/dashboard" className="btn btn-primary">
-            Open Live Dashboard <ArrowRight size={16} />
-          </Link>
-          <a
-            href="https://supabase.com/docs"
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-secondary"
+
+        {/* Core Title */}
+        <div className="space-y-4">
+          <h1 className="text-4xl md:text-6xl font-serif font-black tracking-tight text-[#111111] leading-tight">
+            Rural Medical Triage & Clinical Dispatch
+          </h1>
+          
+          {/* Single Clean Descriptive Sentence */}
+          <p className="font-serif text-lg md:text-xl text-[#333333] max-w-2xl mx-auto leading-relaxed">
+            Instant point-of-care symptom analysis, emergency severity scoring, and immediate hospital referral guidance for rural healthcare workers.
+          </p>
+        </div>
+
+        {/* Primary Call-to-Action */}
+        <div className="pt-4 border-t border-[#111111] flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            to="/triage"
+            className="btn-primary w-full sm:w-auto px-8 py-4 text-sm font-bold tracking-wider"
           >
-            Supabase Docs
-          </a>
-        </div>
-      </div>
+            LAUNCH ASHA FIELD DOCKET
+          </Link>
 
-      <div className="card-grid">
-        {/* Backend Card */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon">
-                <Server size={20} />
-              </div>
-              <h3 className="card-title">Backend API</h3>
-            </div>
-            <span className="card-badge">Express.js</span>
-          </div>
-          <p className="card-desc">
-            RESTful API server with error-handling middleware, modular routing, and CORS configured.
-          </p>
-          <div className="kv-list">
-            <div className="kv-item">
-              <span className="kv-key">Status</span>
-              <span className="kv-value" style={{ color: error ? '#f43f5e' : '#10b981' }}>
-                {loading ? 'Checking...' : error ? 'Unreachable' : 'Healthy (200 OK)'}
-              </span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Port</span>
-              <span className="kv-value">{backendStatus?.port || '5000'}</span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Environment</span>
-              <span className="kv-value">{backendStatus?.environment || 'development'}</span>
-            </div>
-          </div>
+          <Link
+            to="/facilities"
+            className="btn-secondary w-full sm:w-auto px-6 py-4 text-sm font-bold tracking-wider"
+          >
+            VIEW FACILITIES DIRECTORY
+          </Link>
         </div>
 
-        {/* Real-time Socket.io Card */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon cyan">
-                <Zap size={20} />
-              </div>
-              <h3 className="card-title">Real-Time</h3>
-            </div>
-            <span className="card-badge">Socket.io v4</span>
-          </div>
-          <p className="card-desc">
-            WebSocket server setup for instant push notifications, bi-directional messaging, and rooms.
+        {/* Subtle Footer Note */}
+        <div className="pt-2">
+          <p className="font-mono text-[11px] text-[#777777] uppercase tracking-wider">
+            FOR EMERGENCY DISPATCH ASSISTANCE • DIAL 108 / 102
           </p>
-          <div className="kv-list">
-            <div className="kv-item">
-              <span className="kv-key">Engine</span>
-              <span className="kv-value">WebSocket & Polling</span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Heartbeat</span>
-              <span className="kv-value">Automated</span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Client Hook</span>
-              <span className="kv-value">Pre-wired</span>
-            </div>
-          </div>
         </div>
 
-        {/* Supabase Database Card */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title-group">
-              <div className="card-icon emerald">
-                <Database size={20} />
-              </div>
-              <h3 className="card-title">Supabase SDK</h3>
-            </div>
-            <span className="card-badge">Postgres / Auth</span>
-          </div>
-          <p className="card-desc">
-            Supabase client initialized across backend and frontend with environment variables.
-          </p>
-          <div className="kv-list">
-            <div className="kv-item">
-              <span className="kv-key">Client Init</span>
-              <span className="kv-value" style={{ color: supabaseInfo.configured ? '#10b981' : '#f59e0b' }}>
-                {supabaseInfo.configured ? 'Configured' : 'Needs Real Keys'}
-              </span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Project URL</span>
-              <span className="kv-value">{supabaseInfo.url}</span>
-            </div>
-            <div className="kv-item">
-              <span className="kv-key">Env File</span>
-              <span className="kv-value">.env / .env.example</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
