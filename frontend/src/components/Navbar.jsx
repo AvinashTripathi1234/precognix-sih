@@ -166,7 +166,7 @@ export default function Navbar() {
         </div>
 
         {/* Masthead Navigation Tabs (Collapsed Grid Borders) */}
-        <nav className="border-t border-b border-[#111111] grid grid-cols-2 md:grid-cols-6 text-center font-sans text-xs font-bold uppercase divide-x divide-[#111111]">
+        <nav className="border-t border-b border-[#111111] grid grid-cols-2 md:grid-cols-7 text-center font-sans text-xs font-bold uppercase divide-x divide-[#111111]">
           <NavLink
             to="/"
             end
@@ -215,6 +215,18 @@ export default function Navbar() {
             }
           >
             FACILITY DIRECTORY
+          </NavLink>
+          <NavLink
+            to="/referrals"
+            className={({ isActive }) =>
+              `py-2 px-3 transition-none ${
+                isActive
+                  ? 'bg-[#111111] text-[#F9F9F7]'
+                  : 'bg-transparent text-[#111111] hover:bg-[#111111] hover:text-[#F9F9F7]'
+              }`
+            }
+          >
+            NEW REFERRAL
           </NavLink>
           <NavLink
             to="/dashboard"
