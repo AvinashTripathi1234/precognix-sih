@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import NewReferral from './pages/NewReferral';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -14,6 +15,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/referrals" element={<NewReferral />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

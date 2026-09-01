@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { socket } from '../services/socket';
-import { Layers, Activity, Home, LayoutDashboard } from 'lucide-react';
+import { Layers, Activity, Home, LayoutDashboard, ClipboardPlus } from 'lucide-react';
 
 export default function Navbar() {
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -48,6 +48,14 @@ export default function Navbar() {
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
             <LayoutDashboard size={16} /> Dashboard & Live Test
+          </span>
+        </NavLink>
+        <NavLink
+          to="/referrals"
+          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+        >
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+            <ClipboardPlus size={16} /> New Referral
           </span>
         </NavLink>
       </nav>
