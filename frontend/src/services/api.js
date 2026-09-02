@@ -83,9 +83,38 @@ export async function analyzeTriage(symptoms, extraPayload = {}) {
   }
 }
 
+export async function fetchReferrals() {
+  const response = await fetch(`${API_BASE_URL}/api/referrals`);
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.message || `HTTP Error ${response.status}: ${response.statusText}`);
+  }
+
+  return data;
+}
+
+export async function createReferral(payload) {
+  const response = await fetch(`${API_BASE_URL}/api/referrals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.message || `HTTP Error ${response.status}: ${response.statusText}`);
+  }
+
+  return data;
+}
+
 export default {
   fetchHealth,
   fetchStatus,
   testSupabase,
-  analyzeTriage
+  analyzeTriage,
+  fetchReferrals,
+  createReferral
 };

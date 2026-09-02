@@ -8,6 +8,7 @@ import AshaDashboard from './pages/AshaDashboard';
 import MedicalTriageDashboard from './pages/MedicalTriageDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 import FacilitiesPage from './pages/FacilitiesPage';
+import NewReferral from './pages/NewReferral';
 import Login from './pages/Login';
 import PatientPortal from './pages/PatientPortal';
 import NotFound from './pages/NotFound';
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="/triage" element={<AshaDashboard />} />
           <Route path="/asha" element={<AshaDashboard />} />
           <Route path="/facilities" element={<FacilitiesPage />} />
+          <Route path="/referrals" element={<NewReferral />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/patient-portal" element={<PatientPortal />} />
           <Route path="/patient" element={<PatientPortal />} />
